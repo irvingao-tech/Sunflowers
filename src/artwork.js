@@ -48,7 +48,7 @@ export function buildArtwork(scene) {
   const ochre=texture('#a3662e',['#c99b48','#684725','#dfac45','#827133']);
   const foliage=texture('#617045',['#9a9449','#344e36','#c3a04b']);
   const vaseTex=texture('#dcc66b',['#f2dc8f','#87652c','#d0ad4f'],'vase');
-  const material=(color,map)=>new THREE.MeshStandardMaterial({color,map,bumpMap:map,bumpScale:.018,roughness:.92,metalness:0,side:THREE.DoubleSide});
+  const material=(color,map)=>new THREE.MeshStandardMaterial({color,map,bumpMap:map,bumpScale:.022,roughness:.78,metalness:0,side:THREE.DoubleSide});
   const greens=[material(0xc4c587,foliage),material(0x81915c,foliage)];
   const petalMaterials=[0xffedac,0xe1b96f,0xc4984f,0xe8c77a].map(col=>material(col,gold));
   const brown=material(0xf0ce9c,ochre),stemMaterial=material(0xb1b177,foliage);
@@ -107,13 +107,14 @@ export function buildArtwork(scene) {
     disk.add(florets);
     const eye=new THREE.Mesh(new THREE.SphereGeometry(radius*.21,16,10),material(type==='seed'?0x8c986b:0x735a32,foliage));
     eye.position.z=radius*.61+.02;eye.scale.set(.88,1,.17);disk.add(eye);
-    const petals=[],rayCount=type==='seed'?19:type==='wilt'?17:type==='back'?22:27;
-    for(let i=0;i<rayCount;i++){
-      const a=i/rayCount*Math.PI*2+(rand()-.5)*.26;
-      const hinge=new THREE.Group();hinge.position.set(-Math.sin(a)*radius*.88,Math.cos(a)*radius*.95,-.025);hinge.rotation.z=a;head.add(hinge);
-      const petal=new THREE.Mesh(blades[i%blades.length],petalMaterials[Math.floor(rand()*4)]),mature=type==='seed',length=mature?.10+rand()*.28:low?.24+rand()*.4:.63+rand()*.7;
-      petal.scale.set(mature?.55:.8+rand()*.7,length,mature?.5:1);hinge.add(petal);
-      petals.push({hinge,offset:rand()*.1,curl:mature?-.25+rand()*.6:type==='wilt'?-.8+rand()*1.6:(rand()-.5)*.75});
+    const petals=[],rayCount=type==='wilt'?22:28,rings=type==='wilt'||type==='back'?2:3;
+    for(let ring=0;ring<rings;ring++)for(let i=0;i<rayCount;i++){
+      const a=(i+ring*.43)/rayCount*Math.PI*2+(rand()-.5)*.11;
+      const hinge=new THREE.Group();hinge.position.set(-Math.sin(a)*radius*(.88-ring*.04),Math.cos(a)*radius*(.95-ring*.04),.055-ring*.10);hinge.rotation.z=a;head.add(hinge);
+      const petal=new THREE.Mesh(blades[(i+ring*3)%blades.length],petalMaterials[Math.floor(rand()*4)]),mature=type==='seed';
+      const length=(mature?.46+rand()*.4:low?.38+rand()*.42:.72+rand()*.55)*(1-ring*.15);
+      petal.scale.set(mature?1.05:1.15+rand()*.5,length,.85+ring*.18);petal.receiveShadow=true;petal.castShadow=ring===0&&i%2===0;hinge.add(petal);
+      petals.push({hinge,offset:ring*.025+rand()*.04,curl:(mature?-.25+rand()*.65:type==='wilt'?-.8+rand()*1.6:(rand()-.5)*.7)+ring*.12});
     }
     for(let i=0;i<13;i++){
       const a=i/13*Math.PI*2,sepal=new THREE.Mesh(sepalBlade,greens[i%2]);sepal.position.set(-Math.sin(a)*radius*.82,Math.cos(a)*radius*.82,-.1);sepal.rotation.set(-.3-rand()*.6,0,a);sepal.scale.setScalar(type==='seed'?.45:.8+rand()*.5);head.add(sepal);
