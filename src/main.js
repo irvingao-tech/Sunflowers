@@ -17,18 +17,19 @@ try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:
 catch{$('loading').textContent='当前浏览器无法显示三维画面，请使用支持 WebGL 的浏览器。你仍可查看原画。';}
 if(renderer)init();
 function init(){
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;
+  const lowPower=matchMedia('(max-width:700px),(max-width:1000px) and (pointer:coarse)').matches;
+  renderer.setPixelRatio(lowPower?1:Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
   stage.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','向日葵三维场景，拖动旋转，滚轮或双指缩放');
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,100);
-  addStudioLighting(scene,renderer);
+  addStudioLighting(scene,renderer,lowPower);
   const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.enablePan=false;
   controls.minDistance=8;controls.maxDistance=18;controls.minPolarAngle=.4;controls.maxPolarAngle=1.8;controls.autoRotateSpeed=.7;
   let progress=1,playing=false,speed=DEFAULT_SPEED,elapsed=0,sequence=null,turnStart=0,manualRotate=false;
   function resetCamera(){camera.position.set(0,3.05,12.5);controls.target.set(0,2.85,0);controls.update();}
   resetCamera();
-  const {flowers,bouquet}=buildArtwork(scene);
-  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const {flowers,bouquet}=buildArtwork(scene,lowPower);
+  const reducedMotion=lowPower||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const phases=[['初见绿意','一点新绿，悄悄探出陶瓶。<br/>阳光下，故事才刚刚开始。','萌芽'],['向光生长','花茎向上，绿叶渐渐舒展。<br/>每一寸生长，都朝着光的方向。','生长'],['静候花开','花瓣舒展，迎向左上方的光。<br/>静候整束向日葵盛放。','含苞'],['向阳盛放','金黄、赭褐与橄榄绿交织。<br/>盛放与低垂，在同一刻相遇。','盛放']];
   function updateUI(){const n=progress<.45?1:progress<.76?2:3;$('phase-name').textContent=phases[n][0];$('phase-description').innerHTML=phases[n][1];$('phase-number').textContent=`0${n+1}`;$('progress-label').textContent=sequence?.turn>0?`盛放 · 旋转 ${Math.round(sequence.turn*360)}°`:`${Math.round(progress*100)}% · ${phases[n][2]}`;$('progress').value=progress*100;}
   function setPlaying(value){playing=value;$('play').textContent=playing?'Ⅱ':'▶';$('play').setAttribute('aria-label',playing?'暂停生长动画':'播放生长动画');}
@@ -52,8 +53,9 @@ function init(){
   controls.addEventListener('start',()=>{setPlaying(false);stopAutoRotate();});
   function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.fov=Math.max(32,THREE.MathUtils.radToDeg(2*Math.atan(3.35/(12.5*camera.aspect))));camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(stage);resize();$('loading').remove();updateUI();
-  let last=0;
+  let last=0,previousFrame=0;
   renderer.setAnimationLoop(time=>{
+    if(lowPower&&time-previousFrame<1000/30)return;previousFrame=time;
     const dt=Math.min((time-last)/1000,.25);last=time;if(document.hidden)return;elapsed+=dt;
     if(playing&&sequence){
       sequence=advancePlayback(sequence,dt,speed);progress=sequence.progress;

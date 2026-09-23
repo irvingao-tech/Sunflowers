@@ -12,16 +12,16 @@ const FLOWERS = [
   [578,656,-.60,.27,'wilt',.8,.72],
 ];
 
-export function buildArtwork(scene) {
+export function buildArtwork(scene,lowPower=false) {
   let seed=1888;
   const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
   function texture(base,palette,kind='') {
-    const canvas=document.createElement('canvas');canvas.width=768;canvas.height=1024;
-    const c=canvas.getContext('2d');c.fillStyle=base;c.fillRect(0,0,768,1024);
+    const canvas=document.createElement('canvas'),scale=lowPower?.5:1,width=768*scale,height=1024*scale;canvas.width=width;canvas.height=height;
+    const c=canvas.getContext('2d');c.fillStyle=base;c.fillRect(0,0,width,height);c.scale(scale,scale);
     if(kind==='vase'){c.fillStyle='#b58b37';c.fillRect(0,0,768,505);}
     if(kind==='wall'){c.fillStyle='#bf8b30';c.fillRect(0,827,768,197);}
     // Layer broad curved brush marks, with individual bristle ridges, before grain.
-    for(let i=0;i<2400;i++){
+    for(let i=0;i<(lowPower?800:2400);i++){
       const x=rand()*768,y=rand()*1024,len=10+rand()*42;
       c.save();c.translate(x,y);c.rotate(kind==='vase'?-.3+rand()*.6:kind==='wall'?rand()*.8:rand()*1.2-.6);
       c.strokeStyle=kind==='wall'&&y>827?'#987332':palette[Math.floor(rand()*palette.length)];
@@ -29,7 +29,7 @@ export function buildArtwork(scene) {
       c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(5,len*.5,-2,len);c.stroke();
       c.globalAlpha=.1;c.lineWidth=.7;c.beginPath();c.moveTo(2,0);c.quadraticCurveTo(7,len*.5,0,len);c.stroke();c.restore();
     }
-    for(let i=0;i<23000;i++){
+    for(let i=0;i<(lowPower?5000:23000);i++){
       const x=rand()*768,y=rand()*1024;
       c.strokeStyle=kind==='wall'&&y>827?'#8d6e30':palette[Math.floor(rand()*palette.length)];c.globalAlpha=kind==='wall'?.04+rand()*.13:.07+rand()*.26;
       c.lineWidth=.5+rand()*3;c.beginPath();c.moveTo(x,y);
@@ -95,7 +95,7 @@ export function buildArtwork(scene) {
     const back=new THREE.Mesh(new THREE.SphereGeometry(radius*1.02,22,14),greens[0]);back.scale.z=.65;back.position.z=-.13;back.castShadow=true;head.add(back);
     const disk=new THREE.Group();head.add(disk);
     const center=new THREE.Mesh(new THREE.SphereGeometry(radius,32,20),brown);center.scale.set(1,1.07,.61);center.castShadow=true;center.receiveShadow=true;disk.add(center);
-    const count=type==='seed'?1100:470;
+    const count=(type==='seed'?1100:470)*(lowPower?.45:1)|0;
     const florets=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.016,0),new THREE.MeshStandardMaterial({roughness:1}),count);
     const dummy=new THREE.Object3D(),normal=new THREE.Vector3(),up=new THREE.Vector3(0,1,0);
     for(let i=0;i<count;i++){
@@ -107,7 +107,7 @@ export function buildArtwork(scene) {
     disk.add(florets);
     const eye=new THREE.Mesh(new THREE.SphereGeometry(radius*.21,16,10),material(type==='seed'?0x8c986b:0x735a32,foliage));
     eye.position.z=radius*.61+.02;eye.scale.set(.88,1,.17);disk.add(eye);
-    const petals=[],rayCount=type==='wilt'?22:28,rings=type==='wilt'||type==='back'?2:3;
+    const petals=[],rayCount=lowPower?(type==='wilt'?16:20):(type==='wilt'?22:28),rings=lowPower?2:(type==='wilt'||type==='back'?2:3);
     for(let ring=0;ring<rings;ring++)for(let i=0;i<rayCount;i++){
       const a=(i+ring*.43)/rayCount*Math.PI*2+(rand()-.5)*.11;
       const hinge=new THREE.Group();hinge.position.set(-Math.sin(a)*radius*(.88-ring*.04),Math.cos(a)*radius*(.95-ring*.04),.055-ring*.10);hinge.rotation.z=a;head.add(hinge);
