@@ -18,6 +18,7 @@ catch{$('loading').textContent='当前浏览器无法显示三维画面，请使
 if(renderer)init();
 function init(){
   const lowPower=matchMedia('(max-width:700px),(max-width:1000px) and (pointer:coarse)').matches;
+  if(lowPower)stage.querySelector('.stage-hint').textContent='双击播放 · 拖动旋转 · 双指缩放';
   renderer.setPixelRatio(lowPower?1:Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
   stage.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','向日葵三维场景，拖动旋转，滚轮或双指缩放');
@@ -54,11 +55,20 @@ function init(){
   $('rotate').onclick=()=>{setPlaying(false);sequence=null;manualRotate=!manualRotate;$('rotate').setAttribute('aria-pressed',String(manualRotate));updateUI();};
   $('reset').onclick=()=>{setPlaying(false);sequence=null;bouquet.rotation.y=0;stopAutoRotate();resetCamera();updateUI();};
   controls.addEventListener('start',()=>{setPlaying(false);stopAutoRotate();});
-  let tapStart=null;
+  let tapStart=null,lastTap=0;
+  function activateArtwork(){void music.play();if(!playing)startPlayback();}
   renderer.domElement.addEventListener('pointerdown',event=>{if(event.isPrimary)tapStart={x:event.clientX,y:event.clientY};});
   renderer.domElement.addEventListener('pointermove',event=>{if(tapStart&&Math.hypot(event.clientX-tapStart.x,event.clientY-tapStart.y)>8)tapStart=null;});
   renderer.domElement.addEventListener('pointercancel',()=>{tapStart=null;});
-  renderer.domElement.addEventListener('click',()=>{if(!tapStart)return;tapStart=null;void music.play();if(!playing)startPlayback();});
+  renderer.domElement.addEventListener('pointerup',event=>{
+    if(!lowPower||!event.isPrimary||!tapStart)return;
+    tapStart=null;const now=performance.now();
+    if(now-lastTap<350){lastTap=0;activateArtwork();}else lastTap=now;
+  });
+  renderer.domElement.addEventListener('click',event=>{
+    if(lowPower){event.stopPropagation();return;}
+    if(!tapStart)return;tapStart=null;activateArtwork();
+  });
   function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.fov=Math.max(32,THREE.MathUtils.radToDeg(2*Math.atan(3.35/(12.5*camera.aspect))));camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(stage);resize();$('loading').remove();updateUI();
   let last=0,previousFrame=0;
