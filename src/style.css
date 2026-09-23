@@ -8,10 +8,3 @@
 @media(max-width:650px){#stage{inset:180px 4% 135px;width:auto;transform:none}.stage-label{top:10px}.canvas-actions{right:10px;top:36px}}
 
 .header-actions{display:flex;align-items:center;gap:22px}.header-actions button{min-height:44px;white-space:nowrap}#music-toggle{color:#737454}#music-toggle[aria-pressed=true]{color:#8d662b}@media(max-width:650px){.header-actions{gap:12px}.brand-en{display:none}.header-actions button{font-size:12px}}
-
-.shake-panel{position:absolute;bottom:46px;left:10px;right:10px;z-index:2;text-align:center;color:#444b2e}.shake-buttons{display:inline-flex;gap:4px;padding:3px;background:#efdd9be8;border:1px solid #a79b65;border-radius:5px}.shake-buttons button{min-height:40px;padding:5px 9px;font-size:13px}.shake-buttons [aria-pressed=true]{background:#6b7544;color:#fff9df;border-radius:3px}.shake-buttons button:disabled{opacity:.45;cursor:default}.shake-panel p{font-size:12px;line-height:1.5;margin:5px auto 0;max-width:330px;background:#ecdb9bd9;border-radius:3px;padding:2px 5px}
-@media(max-width:650px){header{gap:6px}.brand{letter-spacing:1px;flex-shrink:0}.header-actions{gap:4px}.header-actions button{padding:4px 6px;min-height:44px}#music-toggle{border:1px solid #bcb78e;border-radius:5px;background:#f1e9d5}.shake-panel{left:6px;right:6px;bottom:43px}.shake-buttons button{font-size:12px;padding:5px 7px;min-height:44px}.shake-panel p{font-size:11px;max-width:290px}.stage-hint{font-size:10px}}
-
-/* Keep motion controls outside the artwork so falling petals stay visible. */
-main{min-height:820px}#stage{bottom:226px}.shake-panel{position:static;margin-bottom:14px}.shake-panel p{background:none;padding:0}.shake-buttons{background:#e9e1c4}.timeline{padding-top:10px}
-@media(max-width:650px){main{min-height:880px}#stage{bottom:235px}.shake-panel{margin-bottom:14px}.shake-panel p{margin-top:4px}.timeline{left:5%;right:5%}}
