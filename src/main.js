@@ -21,7 +21,7 @@ if(renderer)init();
 function init(){
   const lowPower=matchMedia('(max-width:700px),(max-width:1000px) and (pointer:coarse)').matches;
   if(lowPower)stage.querySelector('.stage-hint').textContent='双击播放 · 拖动旋转 · 双指缩放';
-  renderer.setPixelRatio(lowPower?.7:Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.setPixelRatio(lowPower?1:Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
   stage.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','向日葵三维场景，拖动旋转，滚轮或双指缩放');
   const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(32,1,.1,100);
@@ -82,7 +82,7 @@ function init(){
   new ResizeObserver(resize).observe(stage);resize();$('loading').remove();updateUI();
   let last=0,previousFrame=0;
   renderer.setAnimationLoop(time=>{
-    if(lowPower&&time-previousFrame<1000/24)return;previousFrame=time;
+    if(lowPower&&time-previousFrame<1000/30)return;previousFrame=time;
     const dt=Math.min((time-last)/1000,.25);last=time;if(document.hidden)return;elapsed+=dt;
     if(playing&&sequence){
       sequence=advancePlayback(sequence,dt,speed);progress=sequence.progress;

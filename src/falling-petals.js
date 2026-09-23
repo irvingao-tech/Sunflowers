@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export function createFallingPetals(scene,flowers,lowPower){
   const originals=new Set(),falling=[];
-  const limit=lowPower?24:64;
+  const limit=lowPower?40:64;
   function reset(){
     for(const source of originals)source.visible=true;
     originals.clear();
@@ -18,10 +18,10 @@ export function createFallingPetals(scene,flowers,lowPower){
     for(const flower of order){
       const meshes=flower.petals.map(p=>p.hinge.children[0]);
       const dropped=meshes.filter(m=>originals.has(m)).length;
-      const allowed=Math.max(1,Math.floor(meshes.length*(lowPower?.3:.28)))-dropped;
+      const allowed=Math.floor(meshes.length*.28)-dropped;
       if(allowed<=0)continue;
       const candidates=meshes.filter(m=>m.visible).sort(()=>Math.random()-.5);
-      const take=Math.min(lowPower?1:2,allowed,candidates.length,limit-falling.length);
+      const take=Math.min(2,allowed,candidates.length,limit-falling.length);
       for(const source of candidates.slice(0,take)){
         const mesh=new THREE.Mesh(source.geometry,source.material);
         source.matrixWorld.decompose(mesh.position,mesh.quaternion,mesh.scale);
@@ -33,7 +33,7 @@ export function createFallingPetals(scene,flowers,lowPower){
           rest:new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2,0,Math.random()*6.28)),settled:false});
         count++;
       }
-      if(count>=(lowPower?10:18)||falling.length>=limit)break;
+      if(count>=18||falling.length>=limit)break;
     }
     return count;
   }

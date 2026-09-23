@@ -3,9 +3,7 @@ import musicUrl from '../music/vincent .m4a?url';
 export function setupMusic(){
   const button=document.getElementById('music-toggle');
   const audio=document.createElement('audio');
-  // Do not make a phone download and decode a 3.8 MB audio file while WebGL is starting.
-  // The source is attached on the first explicit playback gesture instead.
-  audio.loop=true;audio.autoplay=false;audio.playsInline=true;audio.preload='none';audio.volume=.35;
+  audio.src=musicUrl;audio.loop=true;audio.autoplay=true;audio.playsInline=true;audio.preload='auto';audio.volume=.35;
   audio.setAttribute('aria-hidden','true');document.body.appendChild(audio);
   let pending=false,userPaused=false;
   function update(){
@@ -21,10 +19,7 @@ export function setupMusic(){
   }
   async function start(){
     if(userPaused||pending||!audio.paused)return;pending=true;
-    try{
-      if(!audio.src){audio.src=musicUrl;audio.load();}
-      await audio.play();removeAutoStart();
-    }
+    try{await audio.play();removeAutoStart();}
     catch(error){
       update();
       if(error.name!=='NotAllowedError'&&error.name!=='AbortError'){
@@ -39,6 +34,6 @@ export function setupMusic(){
   audio.addEventListener('error',()=>{update();button.title='音乐暂时无法播放，点击重试';button.textContent='♫ 重试音乐';});
   document.addEventListener('click',firstGesture);
   document.addEventListener('keydown',firstKey);
-  update();
+  update();void start();
   return {play:start};
 }

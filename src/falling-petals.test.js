@@ -16,9 +16,9 @@ function fixture(){
 test('fallen petals retain world placement and stay independent of bouquet rotation',()=>{
   const {scene,bouquet,flowers}=fixture();
   const system=createFallingPetals(scene,flowers,true);
-  assert.equal(system.release(),10);
+  assert.equal(system.release(),18);
   const detached=scene.children.filter(o=>o!==bouquet);
-  assert.equal(detached.length,10);
+  assert.equal(detached.length,18);
   const sources=flowers.flatMap(f=>f.petals.map(p=>p.hinge.children[0])).filter(m=>!m.visible);
   for(const source of sources){const p=source.getWorldPosition(new THREE.Vector3());assert.ok(detached.some(m=>m.position.distanceTo(p)<1e-6));}
   const p=detached[0].position.clone();bouquet.rotation.y+=1;scene.updateMatrixWorld(true);
@@ -30,8 +30,8 @@ test('mobile drop limit, settling and complete reset preserve living model asset
   let disposed=false;geometry.addEventListener('dispose',()=>{disposed=true;});material.addEventListener('dispose',()=>{disposed=true;});
   const system=createFallingPetals(scene,flowers,true);
   for(let i=0;i<20;i++)system.release();
-  assert.equal(scene.children.length-1,24);assert.equal(system.release(),0);
-  for(const flower of flowers)assert.ok(flower.petals.filter(p=>!p.hinge.children[0].visible).length<=12);
+  assert.equal(scene.children.length-1,40);assert.equal(system.release(),0);
+  for(const flower of flowers)assert.ok(flower.petals.filter(p=>!p.hinge.children[0].visible).length<=11);
   for(let i=0;i<300;i++)system.update(1/30);
   assert.ok(scene.children.filter(o=>o!==bouquet).every(m=>m.position.y===.06));
   system.reset();assert.equal(scene.children.length,1);assert.equal(disposed,false);
