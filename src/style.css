@@ -6,3 +6,5 @@
 #stage{left:50%;right:auto;top:18px;bottom:126px;width:min(46%,570px);transform:translateX(-50%);border:1px solid #b6a765;box-shadow:0 3px 20px #67582112}
 .stage-label{top:14px;color:#62653b}.stage-label>span:last-child{color:#737344}.stage-hint{color:#4e5433;background:#ecd78bcc;padding:6px 10px;bottom:8px;width:auto;left:50%;transform:translateX(-50%);white-space:nowrap}.signature{display:none}.canvas-actions{right:12px;top:44px}.canvas-actions button{background:#e9d989bb;border-color:#928b53}
 @media(max-width:650px){#stage{inset:180px 4% 135px;width:auto;transform:none}.stage-label{top:10px}.canvas-actions{right:10px;top:36px}}
+
+.header-actions{display:flex;align-items:center;gap:22px}.header-actions button{min-height:44px;white-space:nowrap}#music-toggle{color:#737454}#music-toggle[aria-pressed=true]{color:#8d662b}@media(max-width:650px){.header-actions{gap:12px}.brand-en{display:none}.header-actions button{font-size:12px}}

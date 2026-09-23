@@ -4,6 +4,9 @@ import { addStudioLighting } from './lighting.js';
 import { buildArtwork } from './artwork.js';
 import { START_PROGRESS, DEFAULT_SPEED, advancePlayback, turnAngle, smoothstep as ease } from './animation.js';
 import './style.css';
+import { setupMusic } from './music.js';
+
+setupMusic();
 
 const $=id=>document.getElementById(id),stage=$('stage');
 const dialog=$('reference-dialog');
