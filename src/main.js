@@ -6,7 +6,7 @@ import { START_PROGRESS, DEFAULT_SPEED, advancePlayback, turnAngle, smoothstep a
 import './style.css';
 import { setupMusic } from './music.js';
 
-setupMusic();
+const music=setupMusic();
 
 const $=id=>document.getElementById(id),stage=$('stage');
 const dialog=$('reference-dialog');
@@ -35,14 +35,17 @@ function init(){
   function setPlaying(value){playing=value;$('play').textContent=playing?'Ⅱ':'▶';$('play').setAttribute('aria-label',playing?'暂停生长动画':'播放生长动画');}
   function stopAutoRotate(){manualRotate=false;$('rotate').setAttribute('aria-pressed','false');}
   function cancelSequence(){if(sequence)bouquet.rotation.y=turnStart;sequence=null;}
-  $('play').onclick=()=>{
-    if(playing){setPlaying(false);return;}
+  function startPlayback(){
     if(!sequence){
       if(progress>=1)progress=START_PROGRESS;
       sequence={progress,turn:0,done:false};turnStart=bouquet.rotation.y;
     }
     stopAutoRotate();controls.enableDamping=false;controls.update();controls.enableDamping=true;
     setPlaying(true);updateUI();
+  }
+  $('play').onclick=()=>{
+    if(playing){setPlaying(false);return;}
+    startPlayback();
   };
   function seek(value){cancelSequence();progress=Math.max(START_PROGRESS,Math.min(1,value));setPlaying(false);stopAutoRotate();updateUI();}
   $('progress').oninput=e=>seek(Number(e.target.value)/100);
@@ -51,6 +54,11 @@ function init(){
   $('rotate').onclick=()=>{setPlaying(false);sequence=null;manualRotate=!manualRotate;$('rotate').setAttribute('aria-pressed',String(manualRotate));updateUI();};
   $('reset').onclick=()=>{setPlaying(false);sequence=null;bouquet.rotation.y=0;stopAutoRotate();resetCamera();updateUI();};
   controls.addEventListener('start',()=>{setPlaying(false);stopAutoRotate();});
+  let tapStart=null;
+  renderer.domElement.addEventListener('pointerdown',event=>{if(event.isPrimary)tapStart={x:event.clientX,y:event.clientY};});
+  renderer.domElement.addEventListener('pointermove',event=>{if(tapStart&&Math.hypot(event.clientX-tapStart.x,event.clientY-tapStart.y)>8)tapStart=null;});
+  renderer.domElement.addEventListener('pointercancel',()=>{tapStart=null;});
+  renderer.domElement.addEventListener('click',()=>{if(!tapStart)return;tapStart=null;void music.play();if(!playing)startPlayback();});
   function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.fov=Math.max(32,THREE.MathUtils.radToDeg(2*Math.atan(3.35/(12.5*camera.aspect))));camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(stage);resize();$('loading').remove();updateUI();
   let last=0,previousFrame=0;
