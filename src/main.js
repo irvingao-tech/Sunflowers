@@ -5,6 +5,8 @@ import { buildArtwork } from './artwork.js';
 import { START_PROGRESS, DEFAULT_SPEED, advancePlayback, turnAngle, smoothstep as ease } from './animation.js';
 import './style.css';
 import { setupMusic } from './music.js';
+import { createFallingPetals } from './falling-petals.js';
+import { setupShake } from './shake.js';
 
 const music=setupMusic();
 
@@ -30,6 +32,12 @@ function init(){
   function resetCamera(){camera.position.set(0,3.05,12.5);controls.target.set(0,2.85,0);controls.update();}
   resetCamera();
   const {flowers,bouquet}=buildArtwork(scene,lowPower);
+  const fallingPetals=createFallingPetals(scene,flowers,lowPower);
+  const shake=setupShake({
+    onShake:()=>progress<.9||dialog.open?-1:fallingPetals.release(),
+    onRestore:()=>fallingPetals.reset()
+  });
+  function restorePetals(){fallingPetals.reset();shake.restored();}
   const reducedMotion=lowPower||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const phases=[['初见绿意','一点新绿，悄悄探出陶瓶。<br/>阳光下，故事才刚刚开始。','萌芽'],['向光生长','花茎向上，绿叶渐渐舒展。<br/>每一寸生长，都朝着光的方向。','生长'],['静候花开','花瓣舒展，迎向左上方的光。<br/>静候整束向日葵盛放。','含苞'],['向阳盛放','金黄、赭褐与橄榄绿交织。<br/>盛放与低垂，在同一刻相遇。','盛放']];
   function updateUI(){const n=progress<.45?1:progress<.76?2:3;$('phase-name').textContent=phases[n][0];$('phase-description').innerHTML=phases[n][1];$('phase-number').textContent=`0${n+1}`;$('progress-label').textContent=sequence?.turn>0?`盛放 · 旋转 ${Math.round(sequence.turn*360)}°`:`${Math.round(progress*100)}% · ${phases[n][2]}`;$('progress').value=progress*100;}
@@ -39,6 +47,7 @@ function init(){
   function startPlayback(){
     if(!sequence){
       if(progress>=1)progress=START_PROGRESS;
+      restorePetals();
       sequence={progress,turn:0,done:false};turnStart=bouquet.rotation.y;
     }
     stopAutoRotate();controls.enableDamping=false;controls.update();controls.enableDamping=true;
@@ -48,12 +57,12 @@ function init(){
     if(playing){setPlaying(false);return;}
     startPlayback();
   };
-  function seek(value){cancelSequence();progress=Math.max(START_PROGRESS,Math.min(1,value));setPlaying(false);stopAutoRotate();updateUI();}
+  function seek(value){restorePetals();cancelSequence();progress=Math.max(START_PROGRESS,Math.min(1,value));setPlaying(false);stopAutoRotate();updateUI();}
   $('progress').oninput=e=>seek(Number(e.target.value)/100);
   document.querySelectorAll('[data-progress]').forEach(button=>button.onclick=()=>seek(Number(button.dataset.progress)/100));
   $('speed').onclick=()=>{speed=speed===1?2:speed===2?.5:1;$('speed').textContent=`${speed}×`;};
   $('rotate').onclick=()=>{setPlaying(false);sequence=null;manualRotate=!manualRotate;$('rotate').setAttribute('aria-pressed',String(manualRotate));updateUI();};
-  $('reset').onclick=()=>{setPlaying(false);sequence=null;bouquet.rotation.y=0;stopAutoRotate();resetCamera();updateUI();};
+  $('reset').onclick=()=>{restorePetals();setPlaying(false);sequence=null;bouquet.rotation.y=0;stopAutoRotate();resetCamera();updateUI();};
   controls.addEventListener('start',()=>{setPlaying(false);stopAutoRotate();});
   let tapStart=null,lastTap=0;
   function activateArtwork(){void music.play();if(!playing)startPlayback();}
@@ -91,6 +100,7 @@ function init(){
       f.leaves.forEach((leaf,k)=>leaf.scale.setScalar(ease(.04+k*.07,.4+k*.04,p)));
       f.root.rotation.z=reducedMotion?0:Math.sin(elapsed*.7+i*1.4)*.004*growth;
     });
+    fallingPetals.update(dt);
     controls.update();renderer.render(scene,camera);
   });
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();setPlaying(false);const warning=document.createElement('p');warning.id='loading';warning.textContent='三维画面已暂停，请刷新页面重新加载。';stage.appendChild(warning);});
